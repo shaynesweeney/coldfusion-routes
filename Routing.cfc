@@ -3,6 +3,8 @@
 	
 	TODO: this whole thing is new and was hacked out - there will be much change so I'm not bothering on comments or
 	much documentation at the moment.
+	
+	Test
 --->
 <cfcomponent output="false">
 	<!--- Pseudo-constructor --->
