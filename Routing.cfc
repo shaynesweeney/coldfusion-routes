@@ -3,8 +3,6 @@
 	
 	TODO: this whole thing is new and was hacked out - there will be much change so I'm not bothering on comments or
 	much documentation at the moment.
-	
-	Test
 --->
 <cfcomponent output="false">
 	<!--- Pseudo-constructor --->
@@ -62,6 +60,14 @@
 				<cfset local.i = 1 />
 				<!--- Loop over named arguments in path and populate URL variables --->
 				<cfloop condition="local.NamedArgMatcher.find()">
+					<!--- FIXME: poor implemenation of UDF validation --->
+					<cfif StructKeyExists(local.routeDetails.parameters, local.NamedArgMatcher.group(1))
+						AND local.routeDetails.parameters[local.NamedArgMatcher.group(1)].getClass().getSuperClass().getName().endsWith("UDFMethod")>
+						<cfset local.thisUDF = local.routeDetails.parameters[local.NamedArgMatcher.group(1)] />
+						<cfif NOT local.thisUDF(local.ValueMatcher.group(local.i))>
+							<cfreturn false />
+						</cfif>
+					</cfif>
 					<cfset url[local.NamedArgMatcher.group(1)] = local.ValueMatcher.group(local.i++) />
 				</cfloop>
 				<cfreturn local.routeDetails />
@@ -108,7 +114,7 @@
 		<cfloop condition="local.Matcher.find()">
 			<cfset local.thisNamedArg = local.Matcher.group(2) />
 			<!--- Check if we have a validator (regex) for the named argument --->
-			<cfif StructKeyExists(arguments.parameters, local.thisNamedArg)>
+			<cfif StructKeyExists(arguments.parameters, local.thisNamedArg) AND IsSimpleValue(arguments.parameters[local.thisNamedArg])>
 				<cfset local.newPath = Replace(local.newPath, local.Matcher.group(),
 					local.Matcher.group(1) & "(" & arguments.parameters[local.thisNamedArg] & ")") />
 			<cfelse>
@@ -143,5 +149,9 @@
 	<cffunction name="addConnectedRoute" output="false" access="private">
 		<cfargument name="route" type="struct" required="true" />
 		<cfreturn ArrayAppend(variables.instance.connectedRoutes, arguments.route) />
+	</cffunction>
+	
+	<cffunction name="dump" output="true" access="public">
+		<cfdump var="#variables.instance#" />
 	</cffunction>
 </cfcomponent>
